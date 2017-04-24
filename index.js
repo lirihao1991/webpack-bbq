@@ -144,10 +144,25 @@ const bbq = (config) => {
     };
     const hashPrefix = config.cssLoaderHashPrefix || '';
     const styleQuery = `modules&localIdentName=[name]__[local]___[hash:base64:5]&hashPrefix=${hashPrefix}&importLoaders=1`;
+
+    const serverCssRe = /\.server\.css$/;
+    const serverCssLoader = {
+      test: serverCssRe,
+      include: `${config.basedir}/src/`,
+      loaders: target === 'web' ?
+         [
+          `${cssLoaderName}/locals?${styleQuery}`,
+          'postcss-loader',
+         ] : [
+        `${cssLoaderName}/locals?${styleQuery}&cssText`,
+        'postcss-loader',
+        ]
+    };
+
     const style = {
       test: /\.css$/,
       include: `${config.basedir}/src/`,
-      exclude: filepath => globalCssRe.test(path.basename(filepath)),
+      exclude: filepath => globalCssRe.test(path.basename(filepath)) || serverCssRe.test(path.basename(filepath)),
       use: target === 'web' ? [
         styleLoaderName,
         `${cssLoaderName}?${styleQuery}`,
